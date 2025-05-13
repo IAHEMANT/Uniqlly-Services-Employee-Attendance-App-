@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Attendance System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .hidden { display: none; }
+    .panel { margin-top: 20px; padding: 15px; border: 1px solid #ccc; }
+    input, button { margin: 5px 0; padding: 8px; width: 100%; }
+  </style>
+</head>
+<body>
+
+  <h2>Login</h2>
+  <select id="roleSelect">
+    <option value="employee">Employee</option>
+    <option value="admin">Admin</option>
+  </select><br />
+  <input type="text" id="loginId" placeholder="Login ID" />
+  <input type="password" id="loginPass" placeholder="Password" />
+  <button onclick="login()">Login</button>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="panel hidden">
+    <h3>Admin Panel</h3>
+    <p><strong>Add New Employee</strong></p>
+    <input type="text" id="newEmpId" placeholder="Employee ID" />
+    <input type="password" id="newEmpPass" placeholder="Employee Password" />
+    <button onclick="addEmployee()">Add Employee</button>
+    <h4>Attendance Records</h4>
+    <div id="attendanceRecords"></div>
+  </div>
+
+  <!-- Employee Panel -->
+  <div id="employeePanel" class="panel hidden">
+    <h3>Welcome, <span id="empName"></span></h3>
+    <button onclick="checkIn()">Check In</button>
+    <button onclick="checkOut()">Check Out</button>
+    <h4>Your Attendance Log:</h4>
+    <ul id="empAttendanceLog"></ul>
+  </div>
+
+  <script>
+    const adminPassword = "Admin123";
+    const employees = {};
+    const attendance = {};
+
+    function login() {
+      const role = document.getElementById("roleSelect").value;
+      const id = document.getElementById("loginId").value;
+      const pass = document.getElementById("loginPass").value;
+
+      if (role === "admin") {
+        if (id === "admin" && pass === adminPassword) {
+          showAdminPanel();
+        } else {
+          alert("Invalid admin credentials.");
+        }
+      } else {
+        if (employees[id] && employees[id] === pass) {
+          showEmployeePanel(id);
+        } else {
+          alert("Invalid employee credentials.");
+        }
+      }
+    }
+
+    function showAdminPanel() {
+      document.getElementById("adminPanel").classList.remove("hidden");
+      document.getElementById("employeePanel").classList.add("hidden");
+      displayRecords();
+    }
+
+    function showEmployeePanel(empId) {
+      document.getElementById("adminPanel").classList.add("hidden");
+      document.getElementById("employeePanel").classList.remove("hidden");
+      document.getElementById("empName").innerText = empId;
+      updateEmpLog(empId);
+    }
+
+    function addEmployee() {
+      const id = document.getElementById("newEmpId").value;
+      const pass = document.getElementById("newEmpPass").value;
+      if (!id || !pass) {
+        alert("Enter ID and Password");
+        return;
+      }
+      employees[id] = pass;
+      alert(`Employee ${id} added.`);
+      document.getElementById("newEmpId").value = "";
+      document.getElementById("newEmpPass").value = "";
+    }
+
+    function checkIn() {
+      const empId = document.getElementById("empName").innerText;
+      const time = new Date().toLocaleString();
+      if (!attendance[empId]) attendance[empId] = [];
+      attendance[empId].push(`✅ Checked In at ${time}`);
+      updateEmpLog(empId);
+    }
+
+    function checkOut() {
+      const empId = document.getElementById("empName").innerText;
+      const time = new Date().toLocaleString();
+      if (!attendance[empId]) attendance[empId] = [];
+      attendance[empId].push(`❌ Checked Out at ${time}`);
+      updateEmpLog(empId);
+    }
+
+    function updateEmpLog(empId) {
+      const logList = document.getElementById("empAttendanceLog");
+      logList.innerHTML = "";
+      (attendance[empId] || []).forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = entry;
+        logList.appendChild(li);
+      });
+    }
+
+    function displayRecords() {
+      const recordDiv = document.getElementById("attendanceRecords");
+      recordDiv.innerHTML = "";
+      for (let emp in attendance) {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>${emp}</strong>:<br>${attendance[emp].join("<br>")}`;
+        div.style.marginBottom = "10px";
+        recordDiv.appendChild(div);
+      }
+    }
+  </script>
+
+</body>
+</html>
